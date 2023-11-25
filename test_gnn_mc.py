@@ -78,7 +78,7 @@ def unzip_and_use(folder_path,file_name,cursor,complement,db_conn):
             # Process
             if not graph:
                 print("reading graph")
-                extract_path = folder_path + "/extract"
+                extract_path = "extract/"
                 zip_file_path = os.path.join(folder_path,file_name)
                 # Create a ZipFile object for the specified ZIP file
                 with zipfile.ZipFile(zip_file_path, 'r') as zip_ref:
