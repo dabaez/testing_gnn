@@ -293,8 +293,8 @@ def gen_q_dict_mc(nx_G):
     # all off-diagonal terms get penalty
     for (u,v,w) in nx_G.edges(data=True):
         Q_dic[(u, v)] = 2*w['weight']
-        Q_dic[(u, u)] -= 1
-        Q_dic[(v, v)] -= 1
+        Q_dic[(u, u)] -= w['weight']
+        Q_dic[(v, v)] -= w['weight']
 
     return Q_dic
 
