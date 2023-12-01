@@ -36,7 +36,7 @@ def read_graph_from_file(file_path, complement, comment_char='#'):
             nodes_and_weight = line.strip().split()
             if len(nodes_and_weight) == 3:
                 node1, node2, weight = nodes_and_weight
-                weight=float(weight)
+                weight=1
                 if (weight < 0):
                     neg = True
                     break
@@ -62,18 +62,18 @@ def read_graph_from_file(file_path, complement, comment_char='#'):
 def unzip_and_use(folder_path,file_name,cursor,complement,db_conn):
 
     # Check if the file name is already in the database
-    cursor.execute("SELECT id,filename,seed1,seed2,seed3,seed4,seed5 FROM " + os.path.basename(folder_path) + " WHERE filename=?", (file_name,))
+    cursor.execute("SELECT id,filename,seed1 FROM " + os.path.basename(folder_path) + " WHERE filename=?", (file_name,))
     row = cursor.fetchone()
     if not row:
         cursor.execute("INSERT INTO " + os.path.basename(folder_path) + " (filename) VALUES (?)", (file_name,))
         db_conn.commit()
-        cursor.execute("SELECT id,filename,seed1,seed2,seed3,seed4,seed5 FROM " + os.path.basename(folder_path) + " WHERE filename=?", (file_name,))
+        cursor.execute("SELECT id,filename,seed1 FROM " + os.path.basename(folder_path) + " WHERE filename=?", (file_name,))
         row = cursor.fetchone()
     
     graph = None
     neg = False
 
-    for i in range(1,6):
+    for i in range(1,2):
         if not row[i+1]:
             # Process
             if not graph:
@@ -90,11 +90,11 @@ def unzip_and_use(folder_path,file_name,cursor,complement,db_conn):
                     os.remove(file_path)
 
             if (neg):
-                seed_value = gnn_time = mc_size = -1
+                seed_value = gnn_time = mc_size = epoch = -1
             else:
                 seed_value = random.randint(1,1000000)
-                gnn_time, mc_size = MaxCut(graph,seed_value)
-            cursor.execute("UPDATE " + os.path.basename(folder_path) + " SET seed" + str(i) +"=?, time" + str(i) +"=?, mc" + str(i) + "=? WHERE filename=?", (seed_value,gnn_time,mc_size,file_name,))
+                gnn_time, mc_size, epoch = MaxCut(graph,seed_value)
+            cursor.execute("UPDATE " + os.path.basename(folder_path) + " SET seed" + str(i) +"=?, time" + str(i) +"=?, mc" + str(i) + "=?, epoch" + str(i) + "=?  WHERE filename=?", (seed_value,gnn_time,mc_size,epoch,file_name,))
             db_conn.commit()
 
     extract_path = folder_path + "/extract"
@@ -110,7 +110,11 @@ try:
     cursor = db_conn.cursor()
 
     # Create the 'files' table if it doesn't exist
-    cursor.execute("CREATE TABLE IF NOT EXISTS " + os.path.basename(folder_path) + " (id INTEGER PRIMARY KEY, filename TEXT,seed1 INTEGER, time1 FLOAT, mc1 INTEGER,seed2 INTEGER, time2 FLOAT, mc2 INTEGER,seed3 INTEGER, time3 FLOAT, mc3 INTEGER, seed4 INTEGER, time4 FLOAT, mc4 INTEGER,seed5 INTEGER, time5 FLOAT, mc5 INTEGER)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS " + os.path.basename(folder_path) + 
+                   " (id INTEGER PRIMARY KEY, filename TEXT,seed1 INTEGER, time1 FLOAT, mc1 INTEGER, epoch1 INTEGER"
+                   #" seed2 INTEGER, time2 FLOAT, mc2 INTEGER,seed3 INTEGER, time3 FLOAT, mc3 INTEGER, "
+                   #" seed4 INTEGER, time4 FLOAT, mc4 INTEGER,seed5 INTEGER, time5 FLOAT, mc5 INTEGER)")
+                   ")")
 
     # Iterate through files in the specified folder
     for filename in os.listdir(folder_path):

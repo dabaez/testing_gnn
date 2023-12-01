@@ -406,7 +406,7 @@ def MaxCut(nx_graph, seed_value = 1):
     print(f'MacxCut found by GNN is {size_mc}')
     print(f'Took {round(gnn_tot_time, 3)}s, model training took {round(gnn_time, 3)}s')
 
-    return gnn_tot_time, int(size_mc)
+    return gnn_tot_time, int(size_mc), epoch
 
     # Visualize result
     # pos = nx.drawing.layout.bipartite_layout(nx_graph,set([node for node, entry in enumerate(best_bitstring) if entry == 1]))
