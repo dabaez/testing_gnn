@@ -36,7 +36,7 @@ def read_graph_from_file(file_path, complement, comment_char='#'):
             nodes_and_weight = line.strip().split()
             if len(nodes_and_weight) == 3:
                 node1, node2, weight = nodes_and_weight
-                weight=1
+                weight=float(weight)
                 if (weight < 0):
                     neg = True
                     break
