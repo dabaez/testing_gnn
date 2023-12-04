@@ -312,10 +312,15 @@ def postprocess_gnn_mc(best_bitstring, nx_graph):
     # get bitstring as list
     bitstring_list = list(best_bitstring)
 
+    first_set = set([node for node, entry in enumerate(bitstring_list) if entry == 1])
+
     size_mc = 0
 
     for (u, v, w) in nx_graph.edges(data=True):
-        if bitstring_list[u] != bitstring_list[v]:
+        if u in first_set:
+            if not (v in first_set):
+                size_mc += w['weight']
+        elif v in first_set:
             size_mc += w['weight']
 
     return size_mc
@@ -360,13 +365,13 @@ def MaxCut(nx_graph, seed_value = 1):
     PROB_THRESHOLD = 0.5
 
     # Early stopping to allow NN to train to near-completion
-    tol = 1e-4          # loss must change by more than tol, or trigger
+    tol = 1          # loss must change by more than tol, or trigger
     patience = 100    # number early stopping triggers before breaking loop
 
     # Establish dim_embedding and hidden_dim values
-    dim_embedding = int(np.sqrt(n))    # e.g. 10
+    dim_embedding = max( int(np.sqrt(n)) , 1)    # e.g. 10
     # dim_embedding = 369
-    hidden_dim = [ int(dim_embedding/2) ]  # e.g. 5
+    hidden_dim = [ max( int(dim_embedding/2) , 1) ]  # e.g. 5
     # hidden_dim = [5]
 
     # Establish pytorch GNN + optimizer
@@ -406,7 +411,7 @@ def MaxCut(nx_graph, seed_value = 1):
     print(f'MacxCut found by GNN is {size_mc}')
     print(f'Took {round(gnn_tot_time, 3)}s, model training took {round(gnn_time, 3)}s')
 
-    return gnn_tot_time, int(size_mc), epoch
+    return gnn_tot_time, size_mc, epoch
 
     # Visualize result
     # pos = nx.drawing.layout.bipartite_layout(nx_graph,set([node for node, entry in enumerate(best_bitstring) if entry == 1]))
